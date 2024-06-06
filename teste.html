@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ponto de Venda</title>
+  <style>
+    /* Estilos CSS para a página */
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+    }
+
+    .cliente-container {
+      margin-right: 20px;
+    }
+
+    .cliente-container select {
+      width: 200px;
+    }
+
+    .produtos-container {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .produto {
+      width: 200px;
+      margin: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .produto img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .produto .nome {
+      font-weight: bold;
+    }
+
+    .produto .preco {
+      color: green;
+      font-weight: bold;
+    }
+
+    .produto .quantidade {
+      margin-top: 5px;
+    }
+
+    .produto .quantidade input {
+      width: 40px;
+    }
+
+    .entrega-container {
+      margin-top: 20px;
+    }
+
+    .entrega-container label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .entrega-container input[type="radio"] {
+      margin-right: 5px;
+    }
+
+    .entrega-container .local-entrega {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .carrinho-container {
+      margin-top: 20px;
+    }
+
+    .carrinho {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #f2f2f2;
+    }
+
+    .carrinho .item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .carrinho .total {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .carrinho .total span {
+      color: green;
+    }
+
+    .carrinho .finalizar {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .carrinho .finalizar button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ponto de Venda</h1>
+
+  <div class="container">
+    <div class="cliente-container">
+      <label for="cliente">Cliente:</label>
+      <select id="cliente">
+        <option value="cliente1">Cliente 1</option>
+        <option value="cliente2">Cliente 2</option>
+        <option value="cliente3">Cliente 3</option>
+      </select>
+    </div>
+
+    <div class="produtos-container">
+      <div class="produto">
+        <img src="produto1.jpg" alt="Produto 1">
+        <div class="nome">Beijinho</div>
+        <div class="preco">R$ 1,50</div>
+        <div class="quantidade">
+          <label for="quantidade-beijinho">Quantidade:</label>
+          <input type="number" id="quantidade-beijinho" min="1" value="1">
+        </div>
+        <button onclick="adicionarProduto('Beijinho', 1.50, 'quantidade-beijinho')">Adicionar</button>
+      </div>
+
+      <div class="produto">
+        <img src="produto2.jpg" alt="Produto 2">
+        <div class="nome">Brigadeiro</div>
+        <div class="preco">R$ 1,50</div>
+        <div class="quantidade">
+          <label for="quantidade-brigadeiro">Quantidade:</label>
+          <input type="number" id="quantidade-brigadeiro" min="1" value="1">
+        </div>
+        <button onclick="adicionarProduto('Brigadeiro', 1.50, 'quantidade-brigadeiro')">Adicionar</button>
+      </div>
+
+      <!-- Adicione mais produtos aqui -->
+
+    </div>
+  </div>
+
+  <div class="container entrega-container">
+    <label>Forma de Entrega:</label>
+    <label><input type="radio" name="forma-entrega" value="buscar" onclick="toggleLocalEntrega(false)">Buscar</label>
+    <label><input type="radio" name="forma-entrega" value="entrega" onclick="toggleLocalEntrega(true)">Entrega</label>
+    <div class="local-entrega">
+      <label for="local-entrega">Local de Entrega:</label>
+      <select id="local-entrega">
+        <option value="">Selecione o Local</option>
+        <option value="favela">Favela</option>
+        <option value="guarani">Guarani</option>
+        <option value="sao-cristovao">São Cristóvão</option>
+        <option value="centro">Centro</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="container carrinho-container">
+    <div class="carrinho">
+      <h2>Carrinho</h2>
+      <div class="itens" id="itens-carrinho"></div>
+      <div class="total">Total: <span id="total-carrinho">R$ 0,00</span></div>
+      <div class="finalizar">
+        <label for="forma-pagamento">Forma de Pagamento:</label>
+        <select id="forma-pagamento">
+          <option value="dinheiro">Dinheiro</option>
+          <option value="cartao">Cartão de Crédito</option>
+          <option value="transferencia">Transferência Bancária</option>
+          <option value="pix">Pix</option>
+        </select>
+        <button id="btn-finalizar" onclick="finalizarCompra()" disabled>Finalizar Compra</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variáveis globais
+    var carrinho = [];
+    var totalCarrinho = 0;
+
+    // Função para adicionar um produto ao carrinho
+    function adicionarProduto(nome, preco, quantidadeId) {
+      var quantidadeElement = document.getElementById(quantidadeId);
+      var quantidade = parseInt(quantidadeElement.value);
+
+      var subtotal = preco * quantidade;
+      carrinho.push({ nome: nome, preco: preco, quantidade: quantidade, subtotal: subtotal });
+      totalCarrinho += subtotal;
+
+      atualizarCarrinho();
+    }
+
+    // Função para atualizar o carrinho
+    function atualizarCarrinho() {
+      var itensCarrinho = document.getElementById("itens-carrinho");
+      var totalCarrinhoElement = document.getElementById("total-carrinho");
+
+      itensCarrinho.innerHTML = "";
+      carrinho.forEach(function (item) {
+        var itemHTML = document.createElement("div");
+        itemHTML.textContent = item.nome + " - " + item.quantidade + "x - R$ " + item.subtotal.toFixed(2);
+        itensCarrinho.appendChild(itemHTML);
+      });
+
+      totalCarrinhoElement.textContent = "R$ " + totalCarrinho.toFixed(2);
+    }
+
+    // Função para habilitar/desabilitar o campo de local de entrega
+    function toggleLocalEntrega(habilitar) {
+      var localEntregaElement = document.querySelector(".local-entrega");
+      localEntregaElement.style.display = habilitar ? "block" : "none";
+
+      var btnFinalizarElement = document.getElementById("btn-finalizar");
+      btnFinalizarElement.disabled = !habilitar;
+    }
+
+    // Função para finalizar a compra
+    function finalizarCompra() {
+      var formaPagamento = document.getElementById("forma-pagamento").value;
+      var formaEntrega = document.querySelector('input[name="forma-entrega"]:checked').value;
+      var localEntrega = "";
+
+      if (formaEntrega === "entrega") {
+        var localEntregaElement = document.getElementById("local-entrega");
+        localEntrega = localEntregaElement.value;
+        totalCarrinho += calcularTaxaEntrega(localEntrega);
+      } else if (formaEntrega === "buscar") {
+        localEntrega = "Buscar";
+      }
+
+      var mensagem = "Compra finalizada! Total: R$ " + totalCarrinho.toFixed(2) + " - Forma de Pagamento: ";
+
+      if (formaPagamento === "pix") {
+        mensagem += "Pix\n\n";
+        mensagem += "Chave: 22998996327\n";
+        mensagem += "Banco: Nubank";
+      } else {
+        mensagem += formaPagamento;
+      }
+
+      if (formaEntrega === "entrega") {
+        mensagem += " - Forma de Entrega: " + formaEntrega + " - Local de Entrega: " + localEntrega;
+      } else {
+        mensagem += " - Forma de Entrega: " + formaEntrega;
+      }
+
+      alert(mensagem);
+
+      carrinho = [];
+      totalCarrinho = 0;
+      atualizarCarrinho();
+
+      var quantidadeInputs = document.querySelectorAll('.quantidade input');
+      quantidadeInputs.forEach(function (input) {
+        input.value = 1;
+      });
+
+      var formaEntregaRadios = document.querySelectorAll('input[name="forma-entrega"]');
+      formaEntregaRadios.forEach(function (radio) {
+        radio.checked = false;
+      });
+
+      var localEntregaSelect = document.getElementById("local-entrega");
+      localEntregaSelect.value = "";
+
+      var btnFinalizarElement = document.getElementById("btn-finalizar");
+      btnFinalizarElement.disabled = true;
+    }
+
+    // Função para calcular a taxa de entrega com base no local de entrega
+    function calcularTaxaEntrega(local) {
+      var taxa = 0;
+
+      switch (local) {
+        case "favela":
+          taxa = 2;
+          break;
+        case "guarani":
+          taxa = 4;
+          break;
+        case "sao-cristovao":
+          taxa = 5;
+          break;
+        case "centro":
+          taxa = 8;
+          break;
+        default:
+          taxa = 0;
+          break;
+      }
+
+      return taxa;
+    }
+  </script>
+</body>
+</html>
