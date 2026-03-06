@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agente IA Mentor</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111c36;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #22c55e;
+      --secondary: #38bdf8;
+      --border: #334155;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #020617, #0f172a 30%);
+      color: var(--text);
+    }
+
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1, h2, h3 { margin-top: 0; }
+
+    .hero {
+      background: rgba(17, 28, 54, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .hero p { color: var(--muted); }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-primary { background: var(--primary); color: #052e16; }
+    .btn-secondary { background: var(--secondary); color: #082f49; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: rgba(17, 28, 54, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .chat-box {
+      min-height: 270px;
+      max-height: 360px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-right: 5px;
+    }
+
+    .msg {
+      padding: 10px 12px;
+      border-radius: 10px;
+      line-height: 1.35;
+      white-space: pre-line;
+    }
+
+    .msg.user { align-self: flex-end; background: #1d4ed8; }
+    .msg.bot { align-self: flex-start; background: #1e293b; border: 1px solid var(--border); }
+
+    .input-row { display: flex; gap: 8px; }
+
+    .input-row input {
+      flex: 1;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text);
+      padding: 10px;
+    }
+
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .plan {
+      background: #0b1325;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .plan .price {
+      font-size: 1.35rem;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .plan ul {
+      padding-left: 16px;
+      margin: 10px 0;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      border-radius: 20px;
+      background: #14532d;
+      padding: 4px 8px;
+      margin-bottom: 8px;
+      color: #bbf7d0;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .plans { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <section class="hero">
+      <h1>🤖 Agente IA Mentor</h1>
+      <p>
+        Tire dúvidas sobre Inteligência Artificial, descubra o melhor caminho para iniciantes
+        e veja rotas práticas para ganhar dinheiro com IA.
+      </p>
+      <p><strong>Demonstração automática:</strong> ao abrir a página, o agente já responde uma pergunta exemplo.</p>
+      <div class="quick-actions">
+        <button class="btn-primary" onclick="sendPreset('Sou iniciante total. Por onde começo em IA?')">Começar do zero</button>
+        <button class="btn-secondary" onclick="sendPreset('Quero ganhar dinheiro com IA. O que faço nos próximos 30 dias?')">Plano para renda</button>
+        <button class="btn-secondary" onclick="sendPreset('Explique os planos mensais do básico ao premium.')">Ver planos</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Chat com o Agente</h2>
+        <div id="chat" class="chat-box"></div>
+        <div class="input-row">
+          <input id="userInput" placeholder="Digite sua dúvida sobre IA..." />
+          <button class="btn-primary" onclick="handleSend()">Enviar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Roteiro rápido para iniciantes</h2>
+        <ol>
+          <li><strong>Semana 1:</strong> Fundamentos de IA + Prompt Engineering.</li>
+          <li><strong>Semana 2:</strong> Use ChatGPT para estudo, resumo e organização.</li>
+          <li><strong>Semana 3:</strong> Aprenda uma ferramenta visual (Canva, Notion AI, Midjourney).</li>
+          <li><strong>Semana 4:</strong> Monte 1 portfólio simples e publique serviços.</li>
+        </ol>
+        <p><strong>Foco:</strong> aprender, praticar e vender uma solução simples logo no início.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Planos mensais (Básico ao Premium)</h2>
+      <div class="plans">
+        <div class="plan">
+          <span class="badge">BÁSICO</span>
+          <h3>Starter IA</h3>
+          <div class="price">R$ 49/mês</div>
+          <ul>
+            <li>Guia de primeiros passos</li>
+            <li>20 prompts prontos</li>
+            <li>1 trilha para renda extra</li>
+          </ul>
+        </div>
+
+        <div class="plan">
+          <span class="badge">PRO</span>
+          <h3>Acelera IA</h3>
+          <div class="price">R$ 149/mês</div>
+          <ul>
+            <li>Tudo do plano Básico</li>
+            <li>Templates para freelas</li>
+            <li>Plano de 90 dias para monetização</li>
+            <li>Comunidade e encontros quinzenais</li>
+          </ul>
+        </div>
+
+        <div class="plan">
+          <span class="badge">PREMIUM</span>
+          <h3>Elite IA</h3>
+          <div class="price">R$ 399/mês</div>
+          <ul>
+            <li>Tudo do plano Pro</li>
+            <li>Mentoria em grupo semanal</li>
+            <li>Estratégia de produto digital com IA</li>
+            <li>Biblioteca completa de automações</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Como subir no Netlify Drop (passo rápido)</h2>
+      <p>
+        Crie uma pasta com o nome <strong>site-netlify</strong> e coloque este arquivo dentro dela
+        com o nome <strong>index.html</strong>.
+      </p>
+      <ol>
+        <li>Estrutura recomendada: <code>site-netlify/index.html</code>.</li>
+        <li>Arraste a pasta <code>site-netlify</code> para o <strong>Netlify Drop</strong>.</li>
+        <li>Se quiser, também pode arrastar um <code>.zip</code> dessa pasta.</li>
+      </ol>
+      <p><strong>Resumo:</strong> a pasta pode se chamar <code>site-netlify</code>, e o arquivo principal precisa ser <code>index.html</code>.</p>
+    </section>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+
+    function botReply(text) {
+      const msg = document.createElement('div');
+      msg.className = 'msg bot';
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function userMsg(text) {
+      const msg = document.createElement('div');
+      msg.className = 'msg user';
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function getAnswer(question) {
+      const q = question.toLowerCase();
+
+      if (q.includes('iniciante') || q.includes('começo') || q.includes('comecar') || q.includes('zero')) {
+        return 'Perfeito! Caminho para iniciantes:\n1) Entenda o básico de IA (7 dias).\n2) Aprenda prompts com prática diária (20 min).\n3) Escolha uma ferramenta para dominar.\n4) Crie 3 exemplos de trabalho para portfólio.\n5) Ofereça serviço simples em grupos locais e plataformas freelancer.';
+      }
+
+      if (q.includes('ganhar dinheiro') || q.includes('renda') || q.includes('freela') || q.includes('vender')) {
+        return 'Para ganhar dinheiro com IA, comece com serviços rápidos:\n• Criação de posts e roteiros\n• Edição de currículo e LinkedIn\n• Automação simples de atendimento\nPlano de ação: validando 1 nicho, fechando 3 clientes pequenos e depois criando pacote mensal.';
+      }
+
+      if (q.includes('plano') || q.includes('premium') || q.includes('básico') || q.includes('basico')) {
+        return 'Sugestão de evolução:\nBásico (R$49): aprender e praticar.\nPro (R$149): fechar clientes e padronizar entregas.\nPremium (R$399): escalar com mentoria, automações e produto digital.';
+      }
+
+      return 'Ótima dúvida! Eu posso te ajudar com: estudos de IA, carreira para iniciantes, serviços para renda e estrutura de planos mensais. Se quiser, te passo agora um plano de 30 dias personalizado.';
+    }
+
+    function handleSend() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+
+      if (!text) {
+        return;
+      }
+
+      userMsg(text);
+      const answer = getAnswer(text);
+      setTimeout(() => botReply(answer), 250);
+      input.value = '';
+    }
+
+    function sendPreset(text) {
+      document.getElementById('userInput').value = text;
+      handleSend();
+    }
+
+    botReply('Olá! Eu sou seu Agente IA Mentor 👋\nPergunte sobre como começar em IA, ganhar dinheiro e qual plano mensal escolher.');
+
+    function runAutoDemo() {
+      const demoQuestion = 'Quero começar do zero e ganhar dinheiro com IA. Qual o primeiro passo?';
+      setTimeout(() => {
+        userMsg(demoQuestion);
+        setTimeout(() => botReply(getAnswer(demoQuestion)), 250);
+      }, 450);
+    }
+
+    runAutoDemo();
+  </script>
+</body>
+</html>
