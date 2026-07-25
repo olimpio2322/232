@@ -288,6 +288,7 @@
       <div class="lista-clientes" id="lista-clientes-disparo"></div>
 
       <div class="acoes">
+        <button onclick="preencherDisparoTeste()">Preencher Teste</button>
         <button onclick="gerarDisparoEmMassa()">Gerar Prévia</button>
       </div>
 
@@ -463,6 +464,18 @@
         label.appendChild(document.createTextNode(cliente.nome + ' - ' + cliente.contato + (cliente.optIn ? '' : ' (sem permissão)')));
         listaClientes.appendChild(label);
       });
+    }
+
+    function preencherDisparoTeste() {
+      document.getElementById('titulo-campanha').value = 'Promoção de teste';
+      document.getElementById('canal-disparo').value = 'WhatsApp';
+      document.getElementById('mensagem-disparo').value = 'Olá, {nome}! Este é um teste do disparo em massa. Responda SAIR para não receber novas mensagens.';
+
+      document.querySelectorAll('#lista-clientes-disparo input').forEach(function (checkbox) {
+        checkbox.checked = !checkbox.disabled;
+      });
+
+      gerarDisparoEmMassa();
     }
 
     function gerarDisparoEmMassa() {
