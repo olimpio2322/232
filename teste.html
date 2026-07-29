@@ -1,24 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ponto de Venda</title>
   <style>
     /* Estilos CSS para a página */
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f7f7f7;
+      color: #222;
     }
 
-    h1 {
+    h1,
+    h2 {
       text-align: center;
     }
 
     .container {
       display: flex;
       justify-content: center;
+      gap: 20px;
+      padding: 0 16px;
     }
 
     .cliente-container {
       margin-right: 20px;
+    }
+
+    .cliente-container select,
+    .cliente-container input,
+    .disparo-container input,
+    .disparo-container textarea,
+    .disparo-container select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
     }
 
     .cliente-container select {
@@ -28,6 +49,7 @@
     .produtos-container {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
     }
 
     .produto {
@@ -36,6 +58,7 @@
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      background: white;
     }
 
     .produto img {
@@ -63,16 +86,20 @@
       width: 40px;
     }
 
-    .entrega-container {
+    .entrega-container,
+    .carrinho-container,
+    .disparo-container {
       margin-top: 20px;
     }
 
-    .entrega-container label {
+    .entrega-container label,
+    .disparo-container label {
       display: block;
       margin-bottom: 5px;
     }
 
-    .entrega-container input[type="radio"] {
+    .entrega-container input[type="radio"],
+    .disparo-container input[type="checkbox"] {
       margin-right: 5px;
     }
 
@@ -81,15 +108,13 @@
       margin-top: 10px;
     }
 
-    .carrinho-container {
-      margin-top: 20px;
-    }
-
-    .carrinho {
+    .carrinho,
+    .disparo {
       border: 1px solid #ccc;
-      padding: 10px;
+      padding: 16px;
       border-radius: 5px;
-      background-color: #f2f2f2;
+      background-color: #fff;
+      width: min(780px, 100%);
     }
 
     .carrinho .item {
@@ -107,18 +132,57 @@
       color: green;
     }
 
-    .carrinho .finalizar {
+    .carrinho .finalizar,
+    .disparo .acoes {
       margin-top: 10px;
       text-align: center;
     }
 
-    .carrinho .finalizar button {
+    button {
       background-color: #4CAF50;
       color: white;
       border: none;
       padding: 10px 20px;
       border-radius: 5px;
       cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #9e9e9e;
+      cursor: not-allowed;
+    }
+
+    .disparo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .lista-clientes {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      background: #fafafa;
+      max-height: 170px;
+      overflow-y: auto;
+    }
+
+    .aviso {
+      background: #fff8e1;
+      border: 1px solid #ffd54f;
+      border-radius: 5px;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .preview-mensagens {
+      margin-top: 12px;
+      white-space: pre-wrap;
+      background: #f2f2f2;
+      border-radius: 5px;
+      padding: 10px;
+      min-height: 80px;
     }
   </style>
 </head>
@@ -197,15 +261,65 @@
     </div>
   </div>
 
+  <div class="container disparo-container">
+    <div class="disparo">
+      <h2>Disparo em Massa</h2>
+      <p class="aviso">Use apenas para clientes que autorizaram receber mensagens. A ferramenta gera uma prévia personalizada para conferência antes do envio.</p>
+
+      <div class="disparo-grid">
+        <div>
+          <label for="titulo-campanha">Título da campanha:</label>
+          <input type="text" id="titulo-campanha" placeholder="Ex.: Promoção de sábado">
+        </div>
+        <div>
+          <label for="canal-disparo">Canal:</label>
+          <select id="canal-disparo">
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="SMS">SMS</option>
+            <option value="E-mail">E-mail</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="mensagem-disparo">Mensagem:</label>
+      <textarea id="mensagem-disparo" rows="4" placeholder="Olá, {nome}! Temos brigadeiros fresquinhos hoje. Responda SAIR para não receber novas mensagens."></textarea>
+
+      <label>Clientes com permissão:</label>
+      <div class="lista-clientes" id="lista-clientes-disparo"></div>
+
+      <div class="acoes">
+        <button onclick="preencherDisparoTeste()">Preencher Teste</button>
+        <button onclick="gerarDisparoEmMassa()">Gerar Prévia</button>
+      </div>
+
+      <div class="preview-mensagens" id="preview-disparo">A prévia das mensagens aparecerá aqui.</div>
+    </div>
+  </div>
+
   <script>
     // Variáveis globais
     var carrinho = [];
     var totalCarrinho = 0;
+    var clientes = [
+      { id: 'cliente1', nome: 'Cliente 1', contato: '(22) 99999-0001', optIn: true },
+      { id: 'cliente2', nome: 'Cliente 2', contato: '(22) 99999-0002', optIn: true },
+      { id: 'cliente3', nome: 'Cliente 3', contato: '(22) 99999-0003', optIn: false }
+    ];
+
+    function formatarMoeda(valor) {
+      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
     // Função para adicionar um produto ao carrinho
     function adicionarProduto(nome, preco, quantidadeId) {
       var quantidadeElement = document.getElementById(quantidadeId);
-      var quantidade = parseInt(quantidadeElement.value);
+      var quantidade = parseInt(quantidadeElement.value, 10);
+
+      if (!quantidade || quantidade < 1) {
+        alert('Informe uma quantidade válida.');
+        quantidadeElement.value = 1;
+        return;
+      }
 
       var subtotal = preco * quantidade;
       carrinho.push({ nome: nome, preco: preco, quantidade: quantidade, subtotal: subtotal });
@@ -216,56 +330,73 @@
 
     // Função para atualizar o carrinho
     function atualizarCarrinho() {
-      var itensCarrinho = document.getElementById("itens-carrinho");
-      var totalCarrinhoElement = document.getElementById("total-carrinho");
+      var itensCarrinho = document.getElementById('itens-carrinho');
+      var totalCarrinhoElement = document.getElementById('total-carrinho');
 
-      itensCarrinho.innerHTML = "";
+      itensCarrinho.innerHTML = '';
       carrinho.forEach(function (item) {
-        var itemHTML = document.createElement("div");
-        itemHTML.textContent = item.nome + " - " + item.quantidade + "x - R$ " + item.subtotal.toFixed(2);
+        var itemHTML = document.createElement('div');
+        itemHTML.className = 'item';
+        itemHTML.textContent = item.nome + ' - ' + item.quantidade + 'x - ' + formatarMoeda(item.subtotal);
         itensCarrinho.appendChild(itemHTML);
       });
 
-      totalCarrinhoElement.textContent = "R$ " + totalCarrinho.toFixed(2);
+      totalCarrinhoElement.textContent = formatarMoeda(totalCarrinho);
     }
 
     // Função para habilitar/desabilitar o campo de local de entrega
     function toggleLocalEntrega(habilitar) {
-      var localEntregaElement = document.querySelector(".local-entrega");
-      localEntregaElement.style.display = habilitar ? "block" : "none";
+      var localEntregaElement = document.querySelector('.local-entrega');
+      localEntregaElement.style.display = habilitar ? 'block' : 'none';
 
-      var btnFinalizarElement = document.getElementById("btn-finalizar");
-      btnFinalizarElement.disabled = !habilitar;
+      var btnFinalizarElement = document.getElementById('btn-finalizar');
+      btnFinalizarElement.disabled = false;
     }
 
     // Função para finalizar a compra
     function finalizarCompra() {
-      var formaPagamento = document.getElementById("forma-pagamento").value;
-      var formaEntrega = document.querySelector('input[name="forma-entrega"]:checked').value;
-      var localEntrega = "";
-
-      if (formaEntrega === "entrega") {
-        var localEntregaElement = document.getElementById("local-entrega");
-        localEntrega = localEntregaElement.value;
-        totalCarrinho += calcularTaxaEntrega(localEntrega);
-      } else if (formaEntrega === "buscar") {
-        localEntrega = "Buscar";
+      if (!carrinho.length) {
+        alert('Adicione ao menos um produto ao carrinho.');
+        return;
       }
 
-      var mensagem = "Compra finalizada! Total: R$ " + totalCarrinho.toFixed(2) + " - Forma de Pagamento: ";
+      var formaEntregaSelecionada = document.querySelector('input[name="forma-entrega"]:checked');
+      if (!formaEntregaSelecionada) {
+        alert('Selecione uma forma de entrega.');
+        return;
+      }
 
-      if (formaPagamento === "pix") {
-        mensagem += "Pix\n\n";
-        mensagem += "Chave: 22998996327\n";
-        mensagem += "Banco: Nubank";
+      var formaPagamento = document.getElementById('forma-pagamento').value;
+      var formaEntrega = formaEntregaSelecionada.value;
+      var localEntrega = '';
+      var totalFinal = totalCarrinho;
+
+      if (formaEntrega === 'entrega') {
+        var localEntregaElement = document.getElementById('local-entrega');
+        localEntrega = localEntregaElement.value;
+        if (!localEntrega) {
+          alert('Selecione o local de entrega.');
+          return;
+        }
+        totalFinal += calcularTaxaEntrega(localEntrega);
+      } else if (formaEntrega === 'buscar') {
+        localEntrega = 'Buscar';
+      }
+
+      var mensagem = 'Compra finalizada! Total: ' + formatarMoeda(totalFinal) + ' - Forma de Pagamento: ';
+
+      if (formaPagamento === 'pix') {
+        mensagem += 'Pix\n\n';
+        mensagem += 'Chave: 22998996327\n';
+        mensagem += 'Banco: Nubank';
       } else {
         mensagem += formaPagamento;
       }
 
-      if (formaEntrega === "entrega") {
-        mensagem += " - Forma de Entrega: " + formaEntrega + " - Local de Entrega: " + localEntrega;
+      if (formaEntrega === 'entrega') {
+        mensagem += ' - Forma de Entrega: ' + formaEntrega + ' - Local de Entrega: ' + localEntrega;
       } else {
-        mensagem += " - Forma de Entrega: " + formaEntrega;
+        mensagem += ' - Forma de Entrega: ' + formaEntrega;
       }
 
       alert(mensagem);
@@ -284,10 +415,11 @@
         radio.checked = false;
       });
 
-      var localEntregaSelect = document.getElementById("local-entrega");
-      localEntregaSelect.value = "";
+      var localEntregaSelect = document.getElementById('local-entrega');
+      localEntregaSelect.value = '';
+      document.querySelector('.local-entrega').style.display = 'none';
 
-      var btnFinalizarElement = document.getElementById("btn-finalizar");
+      var btnFinalizarElement = document.getElementById('btn-finalizar');
       btnFinalizarElement.disabled = true;
     }
 
@@ -296,16 +428,16 @@
       var taxa = 0;
 
       switch (local) {
-        case "favela":
+        case 'favela':
           taxa = 2;
           break;
-        case "guarani":
+        case 'guarani':
           taxa = 4;
           break;
-        case "sao-cristovao":
+        case 'sao-cristovao':
           taxa = 5;
           break;
-        case "centro":
+        case 'centro':
           taxa = 8;
           break;
         default:
@@ -315,6 +447,69 @@
 
       return taxa;
     }
+
+    function carregarClientesParaDisparo() {
+      var listaClientes = document.getElementById('lista-clientes-disparo');
+      listaClientes.innerHTML = '';
+
+      clientes.forEach(function (cliente) {
+        var label = document.createElement('label');
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = cliente.id;
+        checkbox.disabled = !cliente.optIn;
+        checkbox.checked = cliente.optIn;
+
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(cliente.nome + ' - ' + cliente.contato + (cliente.optIn ? '' : ' (sem permissão)')));
+        listaClientes.appendChild(label);
+      });
+    }
+
+    function preencherDisparoTeste() {
+      document.getElementById('titulo-campanha').value = 'Promoção de teste';
+      document.getElementById('canal-disparo').value = 'WhatsApp';
+      document.getElementById('mensagem-disparo').value = 'Olá, {nome}! Este é um teste do disparo em massa. Responda SAIR para não receber novas mensagens.';
+
+      document.querySelectorAll('#lista-clientes-disparo input').forEach(function (checkbox) {
+        checkbox.checked = !checkbox.disabled;
+      });
+
+      gerarDisparoEmMassa();
+    }
+
+    function gerarDisparoEmMassa() {
+      var titulo = document.getElementById('titulo-campanha').value.trim();
+      var canal = document.getElementById('canal-disparo').value;
+      var mensagemBase = document.getElementById('mensagem-disparo').value.trim();
+      var selecionados = Array.from(document.querySelectorAll('#lista-clientes-disparo input:checked')).map(function (input) {
+        return input.value;
+      });
+      var preview = document.getElementById('preview-disparo');
+
+      if (!titulo || !mensagemBase) {
+        alert('Informe o título da campanha e a mensagem.');
+        return;
+      }
+
+      if (!selecionados.length) {
+        alert('Selecione ao menos um cliente com permissão.');
+        return;
+      }
+
+      var mensagens = clientes
+        .filter(function (cliente) {
+          return selecionados.indexOf(cliente.id) !== -1 && cliente.optIn;
+        })
+        .map(function (cliente, index) {
+          var mensagemPersonalizada = mensagemBase.replaceAll('{nome}', cliente.nome);
+          return (index + 1) + '. [' + canal + '] ' + cliente.contato + '\n' + titulo + '\n' + mensagemPersonalizada;
+        });
+
+      preview.textContent = mensagens.join('\n\n---\n\n');
+    }
+
+    carregarClientesParaDisparo();
   </script>
 </body>
 </html>
